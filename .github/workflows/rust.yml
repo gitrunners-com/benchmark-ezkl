@@ -3,7 +3,8 @@ name: Rust
 on:
   workflow_dispatch: {}
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref
+  group:
+    ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref
     }}
   cancel-in-progress: true
 
@@ -11,187 +12,193 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  # build:
+  #   runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@v3
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        override: true
-        components: rustfmt, clippy
-    - name: Build
-      run: cargo build --verbose
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - uses: actions-rs/toolchain@v1
+  #     with:
+  #       toolchain: nightly
+  #       override: true
+  #       components: rustfmt, clippy
+  #   - name: Build
+  #     run: cargo build --verbose
 
   benchmarks:
-    runs-on: ubuntu-latest-16-cores
+    runs-on: gitrunners-ubuntu-2204-x64-16vcpu # ubuntu-latest-16-cores
 
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        override: true
-        components: rustfmt, clippy
-    - name: Bench
-      run: cargo bench --verbose
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
+      - name: Bench
+        run: cargo bench --verbose
 
-  docs:
-    runs-on: ubuntu-latest
+  # docs:
+  #   runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@v3
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        override: true
-        components: rustfmt, clippy
-    - name: Docs
-      run: cargo doc --verbose
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - uses: actions-rs/toolchain@v1
+  #     with:
+  #       toolchain: nightly
+  #       override: true
+  #       components: rustfmt, clippy
+  #   - name: Docs
+  #     run: cargo doc --verbose
 
-  library-tests:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        override: true
-        components: rustfmt, clippy
-    - name: Doc tests
-      run: cargo test --doc --verbose
-    - name: Library tests
-      run: cargo test --lib --verbose
+  # library-tests:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - uses: actions-rs/toolchain@v1
+  #     with:
+  #       toolchain: nightly
+  #       override: true
+  #       components: rustfmt, clippy
+  #   - name: Doc tests
+  #     run: cargo test --doc --verbose
+  #   - name: Library tests
+  #     run: cargo test --lib --verbose
 
   forward-pass-tests:
-    runs-on: ubuntu-latest-16-cores
+    runs-on: gitrunners-ubuntu-2204-x64-16vcpu # ubuntu-latest-16-cores
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        override: true
-        components: rustfmt, clippy
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
 
-    - name: Forward Pass
-      run: cargo test --release --verbose tests::forward_pass_
+      - name: Forward Pass
+        run: cargo test --release --verbose tests::forward_pass_
 
-  render-circuit:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        override: true
-        components: rustfmt, clippy
+  # render-circuit:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - uses: actions-rs/toolchain@v1
+  #     with:
+  #       toolchain: nightly
+  #       override: true
+  #       components: rustfmt, clippy
 
-    - name: Circuit Render
-      run: cargo test --release --verbose tests::render_circuit_
+  #   - name: Circuit Render
+  #     run: cargo test --release --verbose tests::render_circuit_
 
   mock-proving-tests:
-    runs-on: ubuntu-latest-32-cores
+    runs-on: gitrunners-ubuntu-2204-x64-32vcpu # ubuntu-latest-32-cores
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        override: true
-        components: rustfmt, clippy
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
 
-    - name: Mock proving tests (public outputs)
-      run: cargo test --release --verbose tests::mock_public_outputs_ -- --test-threads
-        32
-    - name: Mock proving tests (public inputs)
-      run: cargo test --release --verbose tests::mock_public_inputs_ -- --test-threads
-        32
-    - name: Mock proving tests (public params)
-      run: cargo test --release --verbose tests::mock_public_params_ -- --test-threads
-        32
+      - name: Mock proving tests (public outputs)
+        run:
+          cargo test --release --verbose tests::mock_public_outputs_ -- --test-threads
+          32
+      - name: Mock proving tests (public inputs)
+        run:
+          cargo test --release --verbose tests::mock_public_inputs_ -- --test-threads
+          32
+      - name: Mock proving tests (public params)
+        run:
+          cargo test --release --verbose tests::mock_public_params_ -- --test-threads
+          32
 
   prove-and-verify-evm-tests:
-    runs-on: ubuntu-latest-16-cores
+    runs-on: gitrunners-ubuntu-2204-x64-16vcpu # ubuntu-latest-16-cores
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        override: true
-        components: rustfmt, clippy
-    - name: Install solc
-      run: (hash svm 2>/dev/null || cargo install svm-rs) && svm install 0.8.17 &&
-        solc --version
-    - name: Install Anvil
-      run: cargo install --git https://github.com/foundry-rs/foundry --profile local
-        --locked foundry-cli anvil
-    - name: KZG prove and verify tests (EVM)
-      run: cargo test --release --verbose tests_evm -- --test-threads 4
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
+      - name: Install solc
+        run:
+          (hash svm 2>/dev/null || cargo install svm-rs) && svm install 0.8.17 &&
+          solc --version
+      - name: Install Anvil
+        run:
+          cargo install --git https://github.com/foundry-rs/foundry --profile local
+          --locked foundry-cli anvil
+      - name: KZG prove and verify tests (EVM)
+        run: cargo test --release --verbose tests_evm -- --test-threads 4
 
   prove-and-verify-tests:
-    runs-on: ubuntu-latest-16-cores
+    runs-on: gitrunners-ubuntu-2204-x64-16vcpu # ubuntu-latest-16-cores
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        override: true
-        components: rustfmt, clippy
-    - name: KZG prove and verify tests
-      run: cargo test --release --verbose tests::kzg_prove_and_verify_ -- --test-threads
-        4
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
+      - name: KZG prove and verify tests
+        run:
+          cargo test --release --verbose tests::kzg_prove_and_verify_ -- --test-threads
+          4
 
-  prove-and-verify-aggr-tests:
-    runs-on: self-hosted
-    steps:
-    - uses: actions/checkout@v3
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        override: true
-        components: rustfmt, clippy
-    - name: KZG prove and verify aggr tests
-      run: cargo test --release --verbose tests_aggr::kzg_aggr_prove_and_verify_
+  # prove-and-verify-aggr-tests:
+  #   runs-on: self-hosted
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - uses: actions-rs/toolchain@v1
+  #     with:
+  #       toolchain: nightly
+  #       override: true
+  #       components: rustfmt, clippy
+  #   - name: KZG prove and verify aggr tests
+  #     run: cargo test --release --verbose tests_aggr::kzg_aggr_prove_and_verify_
 
-  prove-and-verify-aggr-evm-tests:
-    runs-on: self-hosted
-    steps:
-    - uses: actions/checkout@v3
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        override: true
-        components: rustfmt, clippy
-    - name: Install solc
-      run: (hash svm 2>/dev/null || cargo install svm-rs) && svm install 0.8.17 &&
-        solc --version
-    - name: KZG prove and verify aggr tests
-      run: cargo test --release --verbose tests_evm::kzg_evm_aggr_prove_and_verify_
-        -- --include-ignored
+  # prove-and-verify-aggr-evm-tests:
+  #   runs-on: self-hosted
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - uses: actions-rs/toolchain@v1
+  #     with:
+  #       toolchain: nightly
+  #       override: true
+  #       components: rustfmt, clippy
+  #   - name: Install solc
+  #     run: (hash svm 2>/dev/null || cargo install svm-rs) && svm install 0.8.17 &&
+  #       solc --version
+  #   - name: KZG prove and verify aggr tests
+  #     run: cargo test --release --verbose tests_evm::kzg_evm_aggr_prove_and_verify_
+  #       -- --include-ignored
 
   examples:
-    runs-on: ubuntu-latest-32-cores
+    runs-on: gitrunners-ubuntu-2204-x64-16vcpu # ubuntu-latest-32-cores
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        override: true
-        components: rustfmt, clippy
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
 
-    - name: Download MNIST
-      run: sh data.sh
-    - name: Examples
-      run: cargo test --release tests_examples
+      - name: Download MNIST
+        run: sh data.sh
+      - name: Examples
+        run: cargo test --release tests_examples
 
-  neg-tests:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        override: true
-        components: rustfmt, clippy
-    - name: Mock proving tests (should fail)
-      run: cargo test neg_tests::neg_examples_
+  # neg-tests:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - uses: actions-rs/toolchain@v1
+  #     with:
+  #       toolchain: nightly
+  #       override: true
+  #       components: rustfmt, clippy
+  #   - name: Mock proving tests (should fail)
+  #     run: cargo test neg_tests::neg_examples_
